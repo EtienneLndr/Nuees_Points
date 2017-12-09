@@ -1,0 +1,51 @@
+#-- program name, sources and obj --
+TARGET=Appli
+SRC=$(wildcard src/*.cpp)
+OBJ=$(SRC:.cpp=.o)
+
+#-- location where SFML header files and libraries are installed --
+SFMLDIR=/home/TP/modules/sujets/SFML-2.1
+
+#-- compiler/linker settings --
+CXX=$(wildcard /opt/rh/devtoolset-2/root/usr/bin/g++)
+ifeq (${CXX},)
+  CXX=g++
+endif
+CXXFLAGS=-std=c++11 -W -Wall -Wno-long-long -pedantic -g -O4
+IFLAGS=-I$(SFMLDIR)/include -I./include
+LDFLAGS=-L$(SFMLDIR)/lib -lsfml-graphics -lsfml-window -lsfml-system \
+        -Wl,-rpath,${SFMLDIR}/lib
+
+#-- main target to obtain --
+all : $(TARGET)
+
+
+#-- linker command to produce the executable file --
+$(TARGET) : $(OBJ)
+	@echo Linking $@ ...
+	$(CXX) $^ -o $@ $(LDFLAGS) 
+	@echo
+
+#-- source file header files dependencies --
+src/Appli.o : include/Pong.h include/Constantes.h include/save_datas.h
+src/Forme.o : include/Forme.h include/Couleur.h
+src/Cercle.o : include/Cercle.h include/Forme.h include/Constantes.h
+src/save_datas.o : include/save_datas.h
+src/Pong.o : include/Pong.h include/Cercle.h include/Constantes.h
+
+#-- compiler command for every source file --
+%.o : %.cpp 
+	@echo Compiling $< ....
+	$(CXX) -c $< $(IFLAGS) -o $@ $(CXXFLAGS) 
+	@echo
+
+.PHONY: clean
+
+#-- system-specific command to remove those files --
+clean : 
+	@echo Cleaning...
+	rm -f $(OBJ) $(TARGET) src/*~ include/*~ *~
+	@echo
+
+run :
+	./$(TARGET)
